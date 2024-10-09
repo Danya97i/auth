@@ -1,9 +1,10 @@
 package main
 
 import (
-	pb "auth/pkg/user_v1"
 	"context"
 	"log"
+
+	pb "github.com/Danya97i/auth/pkg/user_v1"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 )

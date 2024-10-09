@@ -1,4 +1,4 @@
-module auth
+module github.com/Danya97i/auth
 
 go 1.23
 

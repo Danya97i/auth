@@ -4,7 +4,7 @@ import (
 	"log"
 	"net"
 
-	pb "auth/pkg/user_v1"
+	pb "github.com/Danya97i/auth/pkg/user_v1"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
