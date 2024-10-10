@@ -13,22 +13,26 @@ type server struct {
 	pb.UnimplementedUserV1Server
 }
 
-func (s *server) Create(_ context.Context, req *pb.CreateRequest) (*pb.CreateResponse, error) {
+// CreateUser - метод для создания нового пользователя
+func (s *server) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	log.Println("create user request: ", req)
 	return nil, nil
 }
 
-func (s *server) Get(_ context.Context, req *pb.GetRequest) (*pb.GetResponse, error) {
+// GetUser- метод для получения информации о пользователе
+func (s *server) GetUser(_ context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
 	log.Println("get user request: ", req)
 	return nil, nil
 }
 
-func (s *server) Update(_ context.Context, req *pb.UpdateRequest) (*emptypb.Empty, error) {
+// UpdateUser - метод обновления данных пользователя
+func (s *server) UpdateUser(_ context.Context, req *pb.UpdateUserRequest) (*emptypb.Empty, error) {
 	log.Println("update user request: ", req)
 	return nil, nil
 }
 
-func (s *server) Delete(_ context.Context, req *pb.DeleteRequest) (*emptypb.Empty, error) {
+// DeleteUser - метод удаления пользователя
+func (s *server) DeleteUser(_ context.Context, req *pb.DeleteUserRequest) (*emptypb.Empty, error) {
 	log.Println("delete user request: ", req)
 	return nil, nil
 }
