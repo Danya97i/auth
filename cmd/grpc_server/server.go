@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "github.com/Danya97i/auth/pkg/user_v1"
@@ -11,6 +12,7 @@ import (
 
 type server struct {
 	pb.UnimplementedUserV1Server
+	pool *pgxpool.Pool
 }
 
 // CreateUser - метод для создания нового пользователя
