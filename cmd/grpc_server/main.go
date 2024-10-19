@@ -7,13 +7,13 @@ import (
 	"net"
 	"time"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
 	"github.com/Danya97i/auth/internal/config"
 	"github.com/Danya97i/auth/internal/config/env"
 	pb "github.com/Danya97i/auth/pkg/user_v1"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 var configPath string
@@ -41,6 +41,8 @@ func main() {
 		log.Fatal(err)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+
+	// подключаемся к postgres
 	pool, err := pgxpool.Connect(ctx, pgConfig.DSN())
 	cancel()
 	if err != nil {
