@@ -14,3 +14,11 @@ services:
       - "POSTGRES_PASSWORD=${PG_PASSWORD}"
     volumes:
       - pg_volume:/var/lib/postgresql/data
+
+  migrator:
+    build: 
+      context: .
+      dockerfile: migrations.Dockerfile
+    restart: on-failure
+    environment:
+      - DB_HOST=pg
