@@ -3,11 +3,12 @@ package pg
 import (
 	"context"
 
-	"github.com/Danya97i/auth/internal/client/db"
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/Danya97i/auth/internal/client/db"
 )
 
 type key string

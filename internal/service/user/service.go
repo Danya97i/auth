@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/Danya97i/auth/internal/client/db"
 	"github.com/Danya97i/auth/internal/models"
 	"github.com/Danya97i/auth/internal/repository"
 	serv "github.com/Danya97i/auth/internal/service"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type service struct {

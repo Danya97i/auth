@@ -4,6 +4,7 @@ install-deps:
 	GOBIN=$(LOCAL_BIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
 	GOBIN=$(LOCAL_BIN) go install -mod=mod google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 	GOBIN=$(LOCAL_BIN) go install github.com/pressly/goose/v3/cmd/goose@v3.14.0
+	GOBIN=$(LOCAL_BIN) go install github.com/daixiang0/gci@v0.13.5
 
 get-deps:
 	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
@@ -23,3 +24,6 @@ install-golangci-lint:
 
 lint:
 	$(LOCAL_BIN)/golangci-lint run ./... --config .golangci.pipeline.yaml
+
+sort-imports:
+	$(LOCAL_BIN)/gci write -s standard -s default -s "prefix(github.com/Danya97i/auth)" --skip-generated ./

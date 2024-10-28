@@ -1,9 +1,10 @@
 package converter
 
 import (
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/Danya97i/auth/internal/models"
 	pb "github.com/Danya97i/auth/pkg/user_v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // ToUserFromService конвертирует models.User в pb.User

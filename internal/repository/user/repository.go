@@ -4,12 +4,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/Masterminds/squirrel"
+
 	"github.com/Danya97i/auth/internal/client/db"
 	"github.com/Danya97i/auth/internal/models"
 	"github.com/Danya97i/auth/internal/repository"
 	"github.com/Danya97i/auth/internal/repository/user/converter"
 	repoModels "github.com/Danya97i/auth/internal/repository/user/models"
-	"github.com/Masterminds/squirrel"
 )
 
 type repo struct {

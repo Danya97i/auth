@@ -3,9 +3,10 @@ package pg
 import (
 	"context"
 
-	"github.com/Danya97i/auth/internal/client/db"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
+
+	"github.com/Danya97i/auth/internal/client/db"
 )
 
 type pgClient struct {
