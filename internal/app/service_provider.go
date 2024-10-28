@@ -11,6 +11,7 @@ import (
 	"github.com/Danya97i/auth/internal/config"
 	"github.com/Danya97i/auth/internal/config/env"
 	"github.com/Danya97i/auth/internal/repository"
+	logRepo "github.com/Danya97i/auth/internal/repository/logs"
 	userRepo "github.com/Danya97i/auth/internal/repository/user"
 	"github.com/Danya97i/auth/internal/service"
 	userService "github.com/Danya97i/auth/internal/service/user"
@@ -24,6 +25,7 @@ type serviceProvider struct {
 	userRepository repository.UserRepository
 	userService    service.UserService
 	userServer     *userServer.Server
+	logRepository  repository.LogRepository
 }
 
 func newServiceProvider() *serviceProvider {
@@ -83,7 +85,9 @@ func (sp *serviceProvider) UserRepository(ctx context.Context) repository.UserRe
 
 func (sp *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if sp.userService == nil {
-		sp.userService = userService.NewService(sp.UserRepository(ctx), sp.TxManager(ctx))
+		sp.userService = userService.NewService(
+			sp.UserRepository(ctx), sp.LogRepository(ctx), sp.TxManager(ctx),
+		)
 	}
 	return sp.userService
 }
@@ -93,5 +97,11 @@ func (sp *serviceProvider) UserServer(ctx context.Context) *userServer.Server {
 		sp.userServer = userServer.NewServer(sp.UserService(ctx))
 	}
 	return sp.userServer
+}
 
+func (sp *serviceProvider) LogRepository(ctx context.Context) repository.LogRepository {
+	if sp.logRepository == nil {
+		sp.logRepository = logRepo.NewRepository(sp.DBClient(ctx))
+	}
+	return sp.logRepository
 }
