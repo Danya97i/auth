@@ -14,10 +14,12 @@ type repo struct {
 	db db.Client
 }
 
+// NewRepository creates new repository
 func NewRepository(db db.Client) repository.LogRepository {
 	return &repo{db: db}
 }
 
+// Save saves log info
 func (r *repo) Save(ctx context.Context, logInfo models.LogInfo) error {
 	insertLogQueryBuilder := squirrel.Insert("users_logs").
 		PlaceholderFormat(squirrel.Dollar).
