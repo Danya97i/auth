@@ -1,20 +1,24 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/Danya97i/auth/internal/models/consts"
+)
 
 // User – пользователь
 type User struct {
 	ID        int64
-	Info      UserInfo
+	Info      *UserInfo
 	CreatedAt time.Time
 	UpdatedAt *time.Time
 }
 
 // UserInfo – информация о пользователе
 type UserInfo struct {
-	Name  string
+	Name  *string
 	Email string
-	Role  Role
+	Role  consts.Role
 }
 
 // Role – роль пользователя

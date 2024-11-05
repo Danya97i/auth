@@ -8,7 +8,10 @@ import (
 )
 
 // ToUserFromService конвертирует models.User в pb.User
-func ToUserFromService(user models.User) *pb.User {
+func ToUserFromService(user *models.User) *pb.User {
+	if user == nil {
+		return nil
+	}
 	pbUser := &pb.User{
 		Id:        user.ID,
 		Info:      ToUserInfoFromService(user.Info),
@@ -21,24 +24,22 @@ func ToUserFromService(user models.User) *pb.User {
 }
 
 // ToUserInfoFromService конвертирует models.UserInfo в pb.UserInfo
-func ToUserInfoFromService(userInfo models.UserInfo) *pb.UserInfo {
-	return &pb.UserInfo{
-		Name:  userInfo.Name,
+func ToUserInfoFromService(userInfo *models.UserInfo) *pb.UserInfo {
+	if userInfo == nil {
+		return nil
+	}
+
+	pbUserInfo := pb.UserInfo{
 		Email: userInfo.Email,
 		Role:  ToRoleFromService(userInfo.Role),
 	}
-}
 
-// ToRoleFromService конвертирует pb.Role в models.Role
-func ToRoleFromService(r models.Role) pb.Role {
-	switch r {
-	case models.ADMIN:
-		return pb.Role_ADMIN
-	case models.USER:
-		return pb.Role_USER
-	default:
-		return pb.Role_UNKNOWN
+	if userInfo.Name != nil {
+		pbUserInfo.Name = *userInfo.Name
+
 	}
+
+	return &pbUserInfo
 }
 
 // --------
@@ -49,21 +50,9 @@ func ToUserInfoFromPb(pbInfo *pb.UserInfo) *models.UserInfo {
 		return nil
 	}
 	info := models.UserInfo{
-		Name:  pbInfo.Name,
+		Name:  &pbInfo.Name,
 		Email: pbInfo.Email,
 		Role:  ToRoleFromPb(pbInfo.Role),
 	}
 	return &info
-}
-
-// ToRoleFromPb конвертирует pb.Role в models.Role
-func ToRoleFromPb(r pb.Role) models.Role {
-	switch r {
-	case pb.Role_ADMIN:
-		return models.ADMIN
-	case pb.Role_USER:
-		return models.USER
-	default:
-		return models.UNKNOWN
-	}
 }

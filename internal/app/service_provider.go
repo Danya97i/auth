@@ -32,6 +32,7 @@ func newServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }
 
+// PGConfig returns pg config
 func (sp *serviceProvider) PGConfig() config.PGConfig {
 	if sp.pgConfig == nil {
 		config, err := env.NewPgConfig()
@@ -43,6 +44,7 @@ func (sp *serviceProvider) PGConfig() config.PGConfig {
 	return sp.pgConfig
 }
 
+// GRPCConfig returns grpc config
 func (sp *serviceProvider) GRPCConfig() config.GRPCConfig {
 	if sp.grpcConfig == nil {
 		config, err := env.NewGrpcConfig()
@@ -54,6 +56,7 @@ func (sp *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return sp.grpcConfig
 }
 
+// DBClient returns db client
 func (sp *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if sp.dbClient == nil {
 		client, err := pg.NewPGClient(ctx, sp.PGConfig().DSN())
@@ -69,6 +72,7 @@ func (sp *serviceProvider) DBClient(ctx context.Context) db.Client {
 	return sp.dbClient
 }
 
+// TxManager returns tx manager
 func (sp *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	if sp.txManager == nil {
 		sp.txManager = transaction.NewTransactionManager(sp.DBClient(ctx).DB())
@@ -76,6 +80,7 @@ func (sp *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	return sp.txManager
 }
 
+// UserRepository returns user repository
 func (sp *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if sp.userRepository == nil {
 		sp.userRepository = userRepo.NewRepository(sp.DBClient(ctx))
@@ -83,6 +88,7 @@ func (sp *serviceProvider) UserRepository(ctx context.Context) repository.UserRe
 	return sp.userRepository
 }
 
+// UserService returns user service
 func (sp *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if sp.userService == nil {
 		sp.userService = userService.NewService(
@@ -92,6 +98,7 @@ func (sp *serviceProvider) UserService(ctx context.Context) service.UserService 
 	return sp.userService
 }
 
+// UserServer returns user server
 func (sp *serviceProvider) UserServer(ctx context.Context) *userServer.Server {
 	if sp.userServer == nil {
 		sp.userServer = userServer.NewServer(sp.UserService(ctx))
@@ -99,6 +106,7 @@ func (sp *serviceProvider) UserServer(ctx context.Context) *userServer.Server {
 	return sp.userServer
 }
 
+// LogRepository returns log repository
 func (sp *serviceProvider) LogRepository(ctx context.Context) repository.LogRepository {
 	if sp.logRepository == nil {
 		sp.logRepository = logRepo.NewRepository(sp.DBClient(ctx))
