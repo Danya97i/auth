@@ -3,11 +3,12 @@ package app
 import (
 	"context"
 
+	"github.com/Danya97i/platform_common/pkg/closer"
+	"github.com/Danya97i/platform_common/pkg/db"
+	"github.com/Danya97i/platform_common/pkg/db/pg"
+	"github.com/Danya97i/platform_common/pkg/db/transaction"
+
 	userServer "github.com/Danya97i/auth/internal/api/user"
-	"github.com/Danya97i/auth/internal/client/db"
-	"github.com/Danya97i/auth/internal/client/db/pg"
-	"github.com/Danya97i/auth/internal/client/db/transaction"
-	"github.com/Danya97i/auth/internal/closer"
 	"github.com/Danya97i/auth/internal/config"
 	"github.com/Danya97i/auth/internal/config/env"
 	"github.com/Danya97i/auth/internal/repository"

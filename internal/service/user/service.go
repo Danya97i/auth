@@ -1,7 +1,8 @@
 package user
 
 import (
-	"github.com/Danya97i/auth/internal/client/db"
+	"github.com/Danya97i/platform_common/pkg/db"
+
 	"github.com/Danya97i/auth/internal/repository"
 	serv "github.com/Danya97i/auth/internal/service"
 )

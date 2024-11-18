@@ -3,9 +3,8 @@ package user
 import (
 	"context"
 
+	"github.com/Danya97i/platform_common/pkg/db"
 	"github.com/Masterminds/squirrel"
-
-	"github.com/Danya97i/auth/internal/client/db"
 )
 
 // Delete удаляет пользователя по id
