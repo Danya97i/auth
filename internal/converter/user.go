@@ -12,14 +12,17 @@ func ToUserFromService(user *models.User) *pb.User {
 	if user == nil {
 		return nil
 	}
+
 	pbUser := &pb.User{
 		Id:        user.ID,
 		Info:      ToUserInfoFromService(user.Info),
 		CreatedAt: timestamppb.New(user.CreatedAt),
 	}
+
 	if user.UpdatedAt != nil {
 		pbUser.UpdatedAt = timestamppb.New(*user.UpdatedAt)
 	}
+
 	return pbUser
 }
 
@@ -49,10 +52,29 @@ func ToUserInfoFromPb(pbInfo *pb.UserInfo) *models.UserInfo {
 	if pbInfo == nil {
 		return nil
 	}
+
 	info := models.UserInfo{
 		Name:  &pbInfo.Name,
 		Email: pbInfo.Email,
 		Role:  ToRoleFromPb(pbInfo.Role),
 	}
+
 	return &info
+}
+
+// ToRoleFromPb собирает UserInfo из UpdateUserRequest
+func ToUserInfoFromPbUpdateRequest(r *pb.UpdateUserRequest) *models.UserInfo {
+	if r == nil {
+		return nil
+	}
+
+	userInfo := models.UserInfo{
+		Role: ToRoleFromPb(r.Role),
+	}
+
+	if r.Name != nil {
+		userInfo.Name = &r.Name.Value
+	}
+
+	return &userInfo
 }

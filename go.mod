@@ -1,12 +1,14 @@
 module github.com/Danya97i/auth
 
-go 1.23
+go 1.23.2
 
 require (
 	github.com/fatih/color v1.17.0
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.35.1
 )
+
+require github.com/Danya97i/platform_common v0.1.3 // indirect
 
 require (
 	github.com/Masterminds/squirrel v1.5.4 // indirect
