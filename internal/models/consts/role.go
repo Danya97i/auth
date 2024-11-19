@@ -5,7 +5,7 @@ type Role string
 
 // Список ролей
 const (
-	Unknown Role = "unknown"
-	Admin   Role = "admin"
-	User    Role = "user"
+	Unknown Role = "UNKNOWN"
+	Admin   Role = "ADMIN"
+	User    Role = "USER"
 )

@@ -64,10 +64,6 @@ func ToUserInfoFromPb(pbInfo *pb.UserInfo) *models.UserInfo {
 
 // ToUserInfoFromPbUpdateRequest собирает UserInfo из UpdateUserRequest
 func ToUserInfoFromPbUpdateRequest(r *pb.UpdateUserRequest) *models.UserInfo {
-	if r == nil {
-		return nil
-	}
-
 	userInfo := models.UserInfo{
 		Role: ToRoleFromPb(r.Role),
 	}

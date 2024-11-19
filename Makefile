@@ -5,6 +5,7 @@ install-deps:
 	GOBIN=$(LOCAL_BIN) go install -mod=mod google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 	GOBIN=$(LOCAL_BIN) go install github.com/pressly/goose/v3/cmd/goose@v3.14.0
 	GOBIN=$(LOCAL_BIN) go install github.com/daixiang0/gci@v0.13.5
+	GOBIN=$(LOCAL_BIN) go install github.com/gojuno/minimock/v3/cmd/minimock@v3.4.2
 
 get-deps:
 	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
@@ -27,3 +28,16 @@ lint:
 
 sort-imports:
 	$(LOCAL_BIN)/gci write -s standard -s default -s "prefix(github.com/Danya97i/auth)" --skip-generated ./
+
+test:
+	go clean -testcache
+	go test ./... -covermode count -coverpkg=github.com/Danya97i/chat-server/internal/service/...,github.com/oDanya97i/chat-server/internal/api/... -count 5
+
+test-coverage:
+	go clean -testcache
+	go test ./... -coverprofile=coverage.tmp.out -covermode count -coverpkg=github.com/Danya97i/auth/internal/service/...,github.com/Danya97i/auth/internal/api/...,github.com/Danya97i/auth/internal/converter -count 5
+	grep -v 'mocks\|config' coverage.tmp.out  > coverage.out
+	rm coverage.tmp.out
+	go tool cover -html=coverage.out;
+	go tool cover -func=./coverage.out | grep "total";
+	grep -sqFx "/coverage.out" .gitignore || echo "/coverage.out" >> .gitignore

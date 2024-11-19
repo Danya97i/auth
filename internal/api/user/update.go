@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 	"log"
 
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -16,9 +15,6 @@ func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*em
 	log.Println("update user request: ", req)
 
 	userInfo := converter.ToUserInfoFromPbUpdateRequest(req)
-	if userInfo == nil {
-		return nil, errors.New("invalid request")
-	}
 
 	if err := s.userService.UpdateUser(ctx, req.Id, userInfo); err != nil {
 		return nil, err
