@@ -24,5 +24,8 @@ func (s *service) User(ctx context.Context, id int64) (*models.User, error) {
 		})
 		return txErr
 	})
-	return user, err
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
