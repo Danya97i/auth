@@ -14,6 +14,12 @@ type UserRepository interface {
 	Delete(ctx context.Context, id int64) error
 }
 
+// UserCache interface
+type UserCache interface {
+	Get(ctx context.Context, id int64) (*models.User, error)
+	Set(ctx context.Context, user *models.User) error
+}
+
 // LogRepository interface
 type LogRepository interface {
 	Save(ctx context.Context, logInfo models.LogInfo) error

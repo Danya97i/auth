@@ -35,7 +35,7 @@ func (s *service) CreateUser(ctx context.Context, userInfo models.UserInfo, pass
 	err = s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var txErr error
 		id, txErr = s.userRepo.Create(ctx, userInfo, string(passHash))
-		if err != nil {
+		if txErr != nil {
 			return txErr
 		}
 
@@ -51,5 +51,9 @@ func (s *service) CreateUser(ctx context.Context, userInfo models.UserInfo, pass
 		return nil
 	})
 
-	return id, err
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }

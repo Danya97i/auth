@@ -24,6 +24,7 @@ func TestUpdateUser(t *testing.T) {
 	type userRepositoryMockFunc func(mc *minimock.Controller) repository.UserRepository
 	type logRepositoyMockFunc func(mc *minimock.Controller) repository.LogRepository
 	type txRepositoryMockFunc func(mc *minimock.Controller) db.TxManager
+	type userCacheMockFunc func(mc *minimock.Controller) repository.UserCache
 
 	type args struct {
 		ctx      context.Context
@@ -60,6 +61,7 @@ func TestUpdateUser(t *testing.T) {
 		userRepositoryMock userRepositoryMockFunc
 		logRepositoyMock   logRepositoyMockFunc
 		txRepositoryMock   txRepositoryMockFunc
+		userCacheMock      userCacheMockFunc
 	}{{
 		name: "user service: update user: success case",
 		args: args{
@@ -88,6 +90,11 @@ func TestUpdateUser(t *testing.T) {
 			})
 			return mock
 		},
+
+		userCacheMock: func(mc *minimock.Controller) repository.UserCache {
+			mock := repoMocks.NewUserCacheMock(mc)
+			return mock
+		},
 	}, {
 		name: "user service: update user: empty user info case",
 		args: args{
@@ -109,6 +116,11 @@ func TestUpdateUser(t *testing.T) {
 
 		txRepositoryMock: func(mc *minimock.Controller) db.TxManager {
 			mock := dbMocks.NewTxManagerMock(mc)
+			return mock
+		},
+
+		userCacheMock: func(mc *minimock.Controller) repository.UserCache {
+			mock := repoMocks.NewUserCacheMock(mc)
 			return mock
 		},
 	}, {
@@ -136,6 +148,11 @@ func TestUpdateUser(t *testing.T) {
 			mock.ReadCommitedMock.Set(func(ctx context.Context, f db.Handler) (err error) {
 				return f(ctx)
 			})
+			return mock
+		},
+
+		userCacheMock: func(mc *minimock.Controller) repository.UserCache {
+			mock := repoMocks.NewUserCacheMock(mc)
 			return mock
 		},
 	}, {
@@ -166,6 +183,11 @@ func TestUpdateUser(t *testing.T) {
 			})
 			return mock
 		},
+
+		userCacheMock: func(mc *minimock.Controller) repository.UserCache {
+			mock := repoMocks.NewUserCacheMock(mc)
+			return mock
+		},
 	}}
 
 	for _, tt := range tests {
@@ -175,11 +197,11 @@ func TestUpdateUser(t *testing.T) {
 			userRepoMock := tt.userRepositoryMock(mc)
 			logRepoMock := tt.logRepositoyMock(mc)
 			txManagerMock := tt.txRepositoryMock(mc)
+			userCahceMock := tt.userCacheMock(mc)
 
-			service := user.NewService(userRepoMock, logRepoMock, txManagerMock)
+			service := user.NewService(userRepoMock, logRepoMock, txManagerMock, userCahceMock)
 			err := service.UpdateUser(tt.args.ctx, tt.args.id, tt.args.userInfo)
 
-			// require.Equal(t, tt.want, newID)
 			require.Equal(t, tt.err, err)
 		})
 	}

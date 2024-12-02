@@ -5,7 +5,7 @@ import (
 
 	"github.com/Danya97i/auth/internal/models"
 	"github.com/Danya97i/auth/internal/models/consts"
-	repoModels "github.com/Danya97i/auth/internal/repository/user/models"
+	repoModels "github.com/Danya97i/auth/internal/repository/user/pg/models"
 )
 
 // ToUserFromRepo конвертирует модель пользователя из репозитория в модель пользователя

@@ -24,6 +24,7 @@ func TestDeleteUser(t *testing.T) {
 	type userRepositoryMockFunc func(mc *minimock.Controller) repository.UserRepository
 	type logRepositoyMockFunc func(mc *minimock.Controller) repository.LogRepository
 	type txRepositoryMockFunc func(mc *minimock.Controller) db.TxManager
+	type userCacheMockFunc func(mc *minimock.Controller) repository.UserCache
 
 	type args struct{}
 
@@ -48,6 +49,7 @@ func TestDeleteUser(t *testing.T) {
 		userRepositoryMock userRepositoryMockFunc
 		logRepositoyMock   logRepositoyMockFunc
 		txRepositoryMock   txRepositoryMockFunc
+		userCacheMock      userCacheMockFunc
 	}{{
 		name: "user service: delete user: success case",
 		args: args{},
@@ -70,6 +72,11 @@ func TestDeleteUser(t *testing.T) {
 			mock.ReadCommitedMock.Set(func(ctx context.Context, f db.Handler) (err error) {
 				return f(ctx)
 			})
+			return mock
+		},
+
+		userCacheMock: func(mc *minimock.Controller) repository.UserCache {
+			mock := repoMocks.NewUserCacheMock(mc)
 			return mock
 		},
 	}, {
@@ -96,6 +103,11 @@ func TestDeleteUser(t *testing.T) {
 			})
 			return mock
 		},
+
+		userCacheMock: func(mc *minimock.Controller) repository.UserCache {
+			mock := repoMocks.NewUserCacheMock(mc)
+			return mock
+		},
 	}, {
 		name: "user service: delete user: write log error case",
 		args: args{},
@@ -120,6 +132,11 @@ func TestDeleteUser(t *testing.T) {
 			})
 			return mock
 		},
+
+		userCacheMock: func(mc *minimock.Controller) repository.UserCache {
+			mock := repoMocks.NewUserCacheMock(mc)
+			return mock
+		},
 	}}
 
 	for _, tt := range tests {
@@ -129,8 +146,9 @@ func TestDeleteUser(t *testing.T) {
 			userRepoMock := tt.userRepositoryMock(mc)
 			logRepoMock := tt.logRepositoyMock(mc)
 			txManagerMock := tt.txRepositoryMock(mc)
+			userCacheMock := tt.userCacheMock(mc)
 
-			service := user.NewService(userRepoMock, logRepoMock, txManagerMock)
+			service := user.NewService(userRepoMock, logRepoMock, txManagerMock, userCacheMock)
 			err := service.DeleteUser(ctx, id)
 
 			require.Equal(t, tt.err, err)

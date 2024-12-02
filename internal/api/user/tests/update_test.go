@@ -40,7 +40,7 @@ func TestUpdateUser(t *testing.T) {
 			Role: pb.Role_ADMIN,
 		}
 
-		resp *emptypb.Empty = nil
+		resp *emptypb.Empty
 
 		userInfo = &models.UserInfo{
 			Name: &name,
