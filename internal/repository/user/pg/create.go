@@ -3,10 +3,11 @@ package user
 import (
 	"context"
 	"database/sql"
+	"strings"
 
+	"github.com/Danya97i/platform_common/pkg/db"
 	"github.com/Masterminds/squirrel"
 
-	"github.com/Danya97i/auth/internal/client/db"
 	"github.com/Danya97i/auth/internal/models"
 )
 
@@ -24,7 +25,7 @@ func (r *repo) Create(ctx context.Context, userInfo models.UserInfo, passHash st
 	insertUserQueryBuilder := squirrel.Insert("users").
 		PlaceholderFormat(squirrel.Dollar).
 		Columns("name", "email", "password", "role").
-		Values(userName, userInfo.Email, passHash, string(userInfo.Role)).
+		Values(userName, userInfo.Email, passHash, strings.ToLower(string(userInfo.Role))).
 		Suffix("RETURNING id")
 
 	insertUserQuery, args, err := insertUserQueryBuilder.ToSql()

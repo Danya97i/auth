@@ -17,6 +17,7 @@ func (s *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 	if info == nil {
 		return nil, errors.New("invalid info")
 	}
+
 	id, err := s.userService.CreateUser(ctx, *info, req.Password, req.PasswordConfirm)
 	if err != nil {
 		return nil, err

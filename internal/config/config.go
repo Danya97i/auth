@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/joho/godotenv"
 )
 
@@ -12,6 +14,14 @@ type GRPCConfig interface {
 // PGConfig - конфигурация для PostgreSQL
 type PGConfig interface {
 	DSN() string
+}
+
+// RedisConfig - конфигурация для Redis
+type RedisConfig interface {
+	Address() string
+	ConnectionTimeout() time.Duration
+	MaxIdle() int
+	IdleTimeout() time.Duration
 }
 
 // Load - загружает конфигурацию из файла .env

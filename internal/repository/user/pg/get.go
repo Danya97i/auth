@@ -3,12 +3,12 @@ package user
 import (
 	"context"
 
+	"github.com/Danya97i/platform_common/pkg/db"
 	"github.com/Masterminds/squirrel"
 
-	"github.com/Danya97i/auth/internal/client/db"
 	"github.com/Danya97i/auth/internal/models"
-	"github.com/Danya97i/auth/internal/repository/user/converter"
-	repoModels "github.com/Danya97i/auth/internal/repository/user/models"
+	"github.com/Danya97i/auth/internal/repository/user/pg/converter"
+	repoModels "github.com/Danya97i/auth/internal/repository/user/pg/models"
 )
 
 // User возвращает пользователя по id
@@ -23,11 +23,11 @@ func (r *repo) User(ctx context.Context, id int64) (*models.User, error) {
 		return nil, err
 	}
 
-	var user *repoModels.User
+	var user repoModels.User
 	query := db.Query{RawQuery: getUserQuery}
-	if err := r.db.DB().ScanOneContext(ctx, user, query, args...); err != nil {
+	if err := r.db.DB().ScanOneContext(ctx, &user, query, args...); err != nil {
 		return nil, err
 	}
 
-	return converter.ToUserFromRepo(user), nil
+	return converter.ToUserFromRepo(&user), nil
 }

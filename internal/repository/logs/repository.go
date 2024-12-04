@@ -3,9 +3,9 @@ package logs
 import (
 	"context"
 
+	"github.com/Danya97i/platform_common/pkg/db"
 	"github.com/Masterminds/squirrel"
 
-	"github.com/Danya97i/auth/internal/client/db"
 	"github.com/Danya97i/auth/internal/models"
 	"github.com/Danya97i/auth/internal/repository"
 )
@@ -30,11 +30,13 @@ func (r *repo) Save(ctx context.Context, logInfo models.LogInfo) error {
 	if err != nil {
 		return err
 	}
+
 	query := db.Query{RawQuery: insertLogQuery}
 
 	_, err = r.db.DB().ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

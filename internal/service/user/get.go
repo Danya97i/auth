@@ -10,7 +10,16 @@ import (
 // User возвращает пользователя по id
 func (s *service) User(ctx context.Context, id int64) (*models.User, error) {
 	var user *models.User
-	err := s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
+	var err error
+
+	// пытаемся получить запись из кэша
+	user, err = s.userCache.Get(ctx, id)
+	if err == nil {
+		return user, nil
+	}
+
+	// если попали сюда, значит в кэше пользователя нет
+	err = s.txManager.ReadCommited(ctx, func(ctx context.Context) error {
 		var txErr error
 		user, txErr = s.userRepo.User(ctx, id)
 		if txErr != nil {
@@ -24,5 +33,12 @@ func (s *service) User(ctx context.Context, id int64) (*models.User, error) {
 		})
 		return txErr
 	})
-	return user, err
+	if err != nil {
+		return nil, err
+	}
+
+	// записываем в кэш
+	_ = s.userCache.Set(ctx, user)
+
+	return user, nil
 }
