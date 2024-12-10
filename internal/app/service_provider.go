@@ -23,9 +23,11 @@ import (
 )
 
 type serviceProvider struct {
-	pgConfig    config.PGConfig
-	grpcConfig  config.GRPCConfig
-	redisConfig config.RedisConfig
+	pgConfig      config.PGConfig
+	grpcConfig    config.GRPCConfig
+	redisConfig   config.RedisConfig
+	gatewayConfig config.GatewayConfig
+	swaggerConfig config.SwaggerConfig
 
 	dbClient  db.Client
 	txManager db.TxManager
@@ -72,6 +74,7 @@ func (sp *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return sp.grpcConfig
 }
 
+// RedisConfig returns redis config
 func (sp *serviceProvider) RedisConfig() config.RedisConfig {
 	if sp.redisConfig == nil {
 		config, err := env.NewRedisConfig()
@@ -81,6 +84,30 @@ func (sp *serviceProvider) RedisConfig() config.RedisConfig {
 		sp.redisConfig = config
 	}
 	return sp.redisConfig
+}
+
+// GatewayConfig returns gateway config
+func (sp *serviceProvider) GatewayConfig() config.GatewayConfig {
+	if sp.gatewayConfig == nil {
+		config, err := env.NewGatewayConfig()
+		if err != nil {
+			panic(err)
+		}
+		sp.gatewayConfig = config
+	}
+	return sp.gatewayConfig
+}
+
+// SwaggerConfig returns swagger config
+func (sp *serviceProvider) SwaggerConfig() config.SwaggerConfig {
+	if sp.swaggerConfig == nil {
+		config, err := env.NewSwaggerConfig()
+		if err != nil {
+			panic(err)
+		}
+		sp.swaggerConfig = config
+	}
+	return sp.swaggerConfig
 }
 
 // DBClient returns db client
