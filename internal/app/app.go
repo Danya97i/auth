@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/Danya97i/platform_common/pkg/closer"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -20,6 +21,8 @@ import (
 	"github.com/Danya97i/auth/internal/config"
 	"github.com/Danya97i/auth/internal/interceptor"
 	pb "github.com/Danya97i/auth/pkg/user_v1"
+
+	// register statik
 	_ "github.com/Danya97i/auth/statik"
 )
 
@@ -149,14 +152,15 @@ func (a *App) initGatewayServer(ctx context.Context) error {
 	})
 
 	a.gatewayServer = &http.Server{
-		Addr:    a.serviceProvider.GatewayConfig().Address(),
-		Handler: corsMiddleware.Handler(mux),
+		Addr:              a.serviceProvider.GatewayConfig().Address(),
+		Handler:           corsMiddleware.Handler(mux),
+		ReadHeaderTimeout: time.Second * 3,
 	}
 
 	return nil
 }
 
-func (a *App) initSwaggerServer(ctx context.Context) error {
+func (a *App) initSwaggerServer(_ context.Context) error {
 	statikFS, err := fs.New()
 	if err != nil {
 		return err
@@ -167,8 +171,9 @@ func (a *App) initSwaggerServer(ctx context.Context) error {
 	mux.HandleFunc("/api.swagger.json", serveSwaggerFile("/api.swagger.json"))
 
 	a.swaggerServer = &http.Server{
-		Addr:    a.serviceProvider.SwaggerConfig().Address(),
-		Handler: mux,
+		Addr:              a.serviceProvider.SwaggerConfig().Address(),
+		Handler:           mux,
+		ReadHeaderTimeout: time.Second * 3,
 	}
 
 	return nil
@@ -207,7 +212,7 @@ func (a *App) runSwaggerServer() error {
 }
 
 func serveSwaggerFile(path string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		statikFS, err := fs.New()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -222,7 +227,7 @@ func serveSwaggerFile(path string) http.HandlerFunc {
 			return
 		}
 
-		defer file.Close()
+		defer func() { _ = file.Close() }()
 
 		log.Printf("read swagger file %s", path)
 
