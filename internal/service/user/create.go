@@ -2,7 +2,9 @@ package user
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"log"
 	"net/mail"
 
 	"golang.org/x/crypto/bcrypt"
@@ -53,6 +55,17 @@ func (s *service) CreateUser(ctx context.Context, userInfo models.UserInfo, pass
 
 	if err != nil {
 		return 0, err
+	}
+
+	data, err := json.Marshal(userInfo)
+	if err != nil {
+		log.Printf("user info marshall error: %s", err)
+		return id, nil
+	}
+
+	err = s.userProducer.SendMessage(ctx, data)
+	if err != nil {
+		log.Printf("user info send to kafka error: %s", err)
 	}
 
 	return id, nil

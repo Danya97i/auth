@@ -24,6 +24,23 @@ type RedisConfig interface {
 	IdleTimeout() time.Duration
 }
 
+// GatewayConfig - конфигурация для Gateway
+type GatewayConfig interface {
+	Address() string
+}
+
+// SwaggerConfig - конфигурация для Swagger
+type SwaggerConfig interface {
+	Address() string
+}
+
+// KafkaConfig - конфигурация для Kafka
+type KafkaConfig interface {
+	Hosts() string
+	UserTopic() string
+	MaxRetryCount() int
+}
+
 // Load - загружает конфигурацию из файла .env
 func Load(path string) error {
 	return godotenv.Load(path)

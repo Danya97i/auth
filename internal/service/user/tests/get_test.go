@@ -11,6 +11,8 @@ import (
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Danya97i/auth/internal/client/kafka"
+	kafkaMocks "github.com/Danya97i/auth/internal/client/kafka/mocks"
 	"github.com/Danya97i/auth/internal/models"
 	"github.com/Danya97i/auth/internal/models/consts"
 	"github.com/Danya97i/auth/internal/repository"
@@ -25,6 +27,7 @@ func TestGetUser(t *testing.T) {
 	type logRepositoyMockFunc func(mc *minimock.Controller) repository.LogRepository
 	type txRepositoryMockFunc func(mc *minimock.Controller) db.TxManager
 	type userCacheMockFunc func(mc *minimock.Controller) repository.UserCache
+	type userProducerMockFunc func(mc *minimock.Controller) kafka.Producer
 
 	type args struct {
 		сtx context.Context
@@ -72,6 +75,7 @@ func TestGetUser(t *testing.T) {
 		logRepositoyMock   logRepositoyMockFunc
 		txRepositoryMock   txRepositoryMockFunc
 		userCacheMock      userCacheMockFunc
+		userProducerMock   userProducerMockFunc
 	}{
 		{
 			name: "user service: get user: success repo case",
@@ -108,6 +112,11 @@ func TestGetUser(t *testing.T) {
 				mock.SetMock.Expect(ctx, wantUser).Return(nil)
 				return mock
 			},
+
+			userProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
+				return mock
+			},
 		},
 
 		{
@@ -137,6 +146,11 @@ func TestGetUser(t *testing.T) {
 			userCacheMock: func(mc *minimock.Controller) repository.UserCache {
 				mock := repoMocks.NewUserCacheMock(mc)
 				mock.GetMock.Expect(ctx, id).Return(wantUser, nil)
+				return mock
+			},
+
+			userProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
 				return mock
 			},
 		},
@@ -172,6 +186,11 @@ func TestGetUser(t *testing.T) {
 			userCacheMock: func(mc *minimock.Controller) repository.UserCache {
 				mock := repoMocks.NewUserCacheMock(mc)
 				mock.GetMock.Expect(ctx, id).Return(nil, errNotInCache)
+				return mock
+			},
+
+			userProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
 				return mock
 			},
 		},
@@ -210,6 +229,11 @@ func TestGetUser(t *testing.T) {
 				mock.GetMock.Expect(ctx, id).Return(nil, errNotInCache)
 				return mock
 			},
+
+			userProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
+				return mock
+			},
 		},
 	}
 
@@ -222,8 +246,9 @@ func TestGetUser(t *testing.T) {
 			logRepoMock := tt.logRepositoyMock(mc)
 			txManagerMock := tt.txRepositoryMock(mc)
 			userCahceMock := tt.userCacheMock(mc)
+			userProducerMock := tt.userProducerMock(mc)
 
-			service := user.NewService(userRepoMock, logRepoMock, txManagerMock, userCahceMock)
+			service := user.NewService(userRepoMock, logRepoMock, txManagerMock, userCahceMock, userProducerMock)
 			gettedUser, err := service.User(tt.args.сtx, tt.args.id)
 			require.Equal(t, tt.want, gettedUser)
 			require.Equal(t, tt.err, err)
