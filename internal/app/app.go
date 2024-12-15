@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/Danya97i/auth/internal/config"
+	"github.com/Danya97i/auth/internal/interceptor"
 	pb "github.com/Danya97i/auth/pkg/user_v1"
 	_ "github.com/Danya97i/auth/statik"
 )
@@ -121,7 +122,10 @@ func (a *App) initServiceProvider(_ context.Context) error {
 
 // initGrpcServer - инициализирует gRPC сервер
 func (a *App) initGrpcServer(ctx context.Context) error {
-	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+	a.grpcServer = grpc.NewServer(
+		grpc.Creds(insecure.NewCredentials()),
+		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
+	)
 	reflection.Register(a.grpcServer)
 	pb.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserServer(ctx))
 	return nil
