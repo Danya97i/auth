@@ -14,6 +14,7 @@ type kafkaConfig struct {
 	maxRetryCount int
 }
 
+// NewKafkaConfig creates a new KafkaConfig
 func NewKafkaConfig() (*kafkaConfig, error) {
 	hosts := os.Getenv("KAFKA_HOSTS")
 	if len(hosts) == 0 {

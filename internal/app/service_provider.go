@@ -193,9 +193,11 @@ func (sp *serviceProvider) SyncProducer() sarama.SyncProducer {
 
 }
 
-func (sp *serviceProvider) UserProducer(ctx context.Context) kafka.Producer {
+// UserProducer returns user producer
+func (sp *serviceProvider) UserProducer(_ context.Context) kafka.Producer {
 	if sp.kafkaProducer == nil {
 		sp.kafkaProducer = producer.NewProducer(sp.SyncProducer(), sp.KafkaConfig().UserTopic())
+		closer.Add(sp.kafkaProducer.Close)
 	}
 	return sp.kafkaProducer
 }

@@ -13,6 +13,7 @@ type swaggerConfig struct {
 	port string
 }
 
+// NewSwaggerConfig creates a new swagger config
 func NewSwaggerConfig() (config.SwaggerConfig, error) {
 	host := os.Getenv("SWAGGER_HOST")
 	if len(host) == 0 {
