@@ -13,6 +13,7 @@ type gatewayConfig struct {
 	port string
 }
 
+// NewGatewayConfig creates a new gateway config
 func NewGatewayConfig() (config.GatewayConfig, error) {
 	host := os.Getenv("GATEWAY_HOST")
 	if len(host) == 0 {

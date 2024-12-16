@@ -34,6 +34,13 @@ type SwaggerConfig interface {
 	Address() string
 }
 
+// KafkaConfig - конфигурация для Kafka
+type KafkaConfig interface {
+	Hosts() string
+	UserTopic() string
+	MaxRetryCount() int
+}
+
 // Load - загружает конфигурацию из файла .env
 func Load(path string) error {
 	return godotenv.Load(path)
