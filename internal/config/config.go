@@ -45,3 +45,9 @@ type KafkaConfig interface {
 func Load(path string) error {
 	return godotenv.Load(path)
 }
+
+// TokenConfig - конфигурация для токенов
+type TokenConfig interface {
+	Secret() string
+	Expiration() time.Duration
+}

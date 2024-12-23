@@ -43,6 +43,7 @@ require (
 require (
 	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/georgysavva/scany v1.2.2
 	github.com/gomodule/redigo v1.9.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0
