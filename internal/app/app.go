@@ -24,6 +24,7 @@ import (
 	pbAccess "github.com/Danya97i/auth/pkg/access_v1"
 	pbAuth "github.com/Danya97i/auth/pkg/auth_v1"
 	pbUser "github.com/Danya97i/auth/pkg/user_v1"
+
 	// register statik
 	_ "github.com/Danya97i/auth/statik"
 )
