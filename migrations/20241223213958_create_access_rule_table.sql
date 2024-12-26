@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS access_rules (
     role role NOT NULL,
-    endpoint TEXT
+    endpoint TEXT,
     PRIMARY KEY (role, endpoint)
 );
 -- +goose StatementEnd

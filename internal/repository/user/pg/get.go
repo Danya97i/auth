@@ -33,7 +33,7 @@ func (r *repo) User(ctx context.Context, id int64) (*models.User, error) {
 }
 
 func (r *repo) UserByName(ctx context.Context, name string) (*models.User, error) {
-	getUserQueryBuilder := squirrel.Select("id", "name", "email", "role", "created_at", "updated_at").
+	getUserQueryBuilder := squirrel.Select("id", "name", "email", "role", "created_at", "updated_at", "password").
 		PlaceholderFormat(squirrel.Dollar).
 		From("users").
 		Where(squirrel.Eq{"name": name})
