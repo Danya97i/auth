@@ -3,6 +3,7 @@ package access_rule
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/Danya97i/platform_common/pkg/db"
 
@@ -15,7 +16,7 @@ func (r *repo) CheckRuleExist(ctx context.Context, role consts.Role, endpoint st
 
 	query := db.Query{RawQuery: rawQuery}
 	var result bool
-	if err := r.db.DB().ScanOneContext(ctx, &result, query, role, endpoint); err != nil {
+	if err := r.db.DB().ScanOneContext(ctx, &result, query, strings.ToLower(string(role)), endpoint); err != nil {
 		return err
 	}
 
