@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 
@@ -12,6 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Danya97i/auth/internal/client/kafka"
+	kafkaMocks "github.com/Danya97i/auth/internal/client/kafka/mocks"
 	"github.com/Danya97i/auth/internal/models"
 	"github.com/Danya97i/auth/internal/models/consts"
 	"github.com/Danya97i/auth/internal/repository"
@@ -26,6 +29,7 @@ func TestCreateUser(t *testing.T) {
 	type logRepositoyMockFunc func(mc *minimock.Controller) repository.LogRepository
 	type txRepositoryMockFunc func(mc *minimock.Controller) db.TxManager
 	type userCacheMockFunc func(mc *minimock.Controller) repository.UserCache
+	type userProducerMockFunc func(mc *minimock.Controller) kafka.Producer
 
 	type args struct {
 		ctx         context.Context
@@ -53,6 +57,8 @@ func TestCreateUser(t *testing.T) {
 			Role:  consts.User,
 		}
 
+		providerMessage, _ = json.Marshal(&userInfo)
+
 		logInfo = models.LogInfo{UserID: id, Action: consts.ActionCreate}
 
 		ErrEmptyName     = errors.New("user name is empty")
@@ -71,6 +77,7 @@ func TestCreateUser(t *testing.T) {
 		logRepositoyMock   logRepositoyMockFunc
 		txRepositoryMock   txRepositoryMockFunc
 		userCacheMock      userCacheMockFunc
+		userProducerMock   userProducerMockFunc
 	}{
 		{
 			name: "user service: create user: success case",
@@ -110,6 +117,12 @@ func TestCreateUser(t *testing.T) {
 				mock := repoMocks.NewUserCacheMock(mc)
 				return mock
 			},
+
+			userProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
+				mock.SendMessageMock.Expect(ctx, providerMessage).Return(nil)
+				return mock
+			},
 		},
 
 		{
@@ -144,6 +157,11 @@ func TestCreateUser(t *testing.T) {
 
 			userCacheMock: func(mc *minimock.Controller) repository.UserCache {
 				mock := repoMocks.NewUserCacheMock(mc)
+				return mock
+			},
+
+			userProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
 				return mock
 			},
 		},
@@ -182,6 +200,11 @@ func TestCreateUser(t *testing.T) {
 				mock := repoMocks.NewUserCacheMock(mc)
 				return mock
 			},
+
+			userProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
+				return mock
+			},
 		},
 
 		{
@@ -216,6 +239,11 @@ func TestCreateUser(t *testing.T) {
 
 			userCacheMock: func(mc *minimock.Controller) repository.UserCache {
 				mock := repoMocks.NewUserCacheMock(mc)
+				return mock
+			},
+
+			userProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
 				return mock
 			},
 		},
@@ -255,6 +283,11 @@ func TestCreateUser(t *testing.T) {
 
 			userCacheMock: func(mc *minimock.Controller) repository.UserCache {
 				mock := repoMocks.NewUserCacheMock(mc)
+				return mock
+			},
+
+			userProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
 				return mock
 			},
 		},
@@ -297,6 +330,11 @@ func TestCreateUser(t *testing.T) {
 				mock := repoMocks.NewUserCacheMock(mc)
 				return mock
 			},
+
+			userProducerMock: func(mc *minimock.Controller) kafka.Producer {
+				mock := kafkaMocks.NewProducerMock(mc)
+				return mock
+			},
 		},
 	}
 
@@ -309,8 +347,9 @@ func TestCreateUser(t *testing.T) {
 			logRepoMock := tt.logRepositoyMock(mc)
 			txManagerMock := tt.txRepositoryMock(mc)
 			userCacheMock := tt.userCacheMock(mc)
+			userProducerMock := tt.userProducerMock(mc)
 
-			service := user.NewService(userRepoMock, logRepoMock, txManagerMock, userCacheMock)
+			service := user.NewService(userRepoMock, logRepoMock, txManagerMock, userCacheMock, userProducerMock)
 			newID, err := service.CreateUser(tt.args.ctx, tt.args.userInfo, tt.args.pass, tt.args.passConfirm)
 
 			require.Equal(t, tt.want, newID)

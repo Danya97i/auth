@@ -5,3 +5,5 @@
 .DS_Store
 /.gigaide
 /coverage.out
+
+vendor.protogen

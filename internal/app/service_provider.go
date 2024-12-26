@@ -2,16 +2,20 @@ package app
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Danya97i/platform_common/pkg/closer"
 	"github.com/Danya97i/platform_common/pkg/db"
 	"github.com/Danya97i/platform_common/pkg/db/pg"
 	"github.com/Danya97i/platform_common/pkg/db/transaction"
+	"github.com/IBM/sarama"
 	redigo "github.com/gomodule/redigo/redis"
 
 	userServer "github.com/Danya97i/auth/internal/api/user"
 	"github.com/Danya97i/auth/internal/client/cache"
 	"github.com/Danya97i/auth/internal/client/cache/redis"
+	"github.com/Danya97i/auth/internal/client/kafka"
+	"github.com/Danya97i/auth/internal/client/kafka/producer"
 	"github.com/Danya97i/auth/internal/config"
 	"github.com/Danya97i/auth/internal/config/env"
 	"github.com/Danya97i/auth/internal/repository"
@@ -23,15 +27,22 @@ import (
 )
 
 type serviceProvider struct {
-	pgConfig    config.PGConfig
-	grpcConfig  config.GRPCConfig
-	redisConfig config.RedisConfig
+	pgConfig      config.PGConfig
+	grpcConfig    config.GRPCConfig
+	redisConfig   config.RedisConfig
+	gatewayConfig config.GatewayConfig
+	swaggerConfig config.SwaggerConfig
+	kafkaConfig   config.KafkaConfig
 
 	dbClient  db.Client
 	txManager db.TxManager
 
 	redisPool   *redigo.Pool
 	redisClient cache.RedisClient
+
+	syncProducer sarama.SyncProducer
+
+	kafkaProducer kafka.Producer
 
 	userCache repository.UserCache
 
@@ -72,6 +83,7 @@ func (sp *serviceProvider) GRPCConfig() config.GRPCConfig {
 	return sp.grpcConfig
 }
 
+// RedisConfig returns redis config
 func (sp *serviceProvider) RedisConfig() config.RedisConfig {
 	if sp.redisConfig == nil {
 		config, err := env.NewRedisConfig()
@@ -81,6 +93,41 @@ func (sp *serviceProvider) RedisConfig() config.RedisConfig {
 		sp.redisConfig = config
 	}
 	return sp.redisConfig
+}
+
+// GatewayConfig returns gateway config
+func (sp *serviceProvider) GatewayConfig() config.GatewayConfig {
+	if sp.gatewayConfig == nil {
+		config, err := env.NewGatewayConfig()
+		if err != nil {
+			panic(err)
+		}
+		sp.gatewayConfig = config
+	}
+	return sp.gatewayConfig
+}
+
+// SwaggerConfig returns swagger config
+func (sp *serviceProvider) SwaggerConfig() config.SwaggerConfig {
+	if sp.swaggerConfig == nil {
+		config, err := env.NewSwaggerConfig()
+		if err != nil {
+			panic(err)
+		}
+		sp.swaggerConfig = config
+	}
+	return sp.swaggerConfig
+}
+
+func (sp *serviceProvider) KafkaConfig() config.KafkaConfig {
+	if sp.kafkaConfig == nil {
+		config, err := env.NewKafkaConfig()
+		if err != nil {
+			panic(err)
+		}
+		sp.kafkaConfig = config
+	}
+	return sp.kafkaConfig
 }
 
 // DBClient returns db client
@@ -129,6 +176,32 @@ func (sp *serviceProvider) RedisClient() cache.RedisClient {
 	return sp.redisClient
 }
 
+func (sp *serviceProvider) SyncProducer() sarama.SyncProducer {
+	if sp.syncProducer == nil {
+		producerConfig := sarama.NewConfig()
+		producerConfig.Producer.RequiredAcks = sarama.WaitForAll
+		producerConfig.Producer.Retry.Max = sp.KafkaConfig().MaxRetryCount()
+		producerConfig.Producer.Return.Successes = true
+
+		syncProducer, err := sarama.NewSyncProducer(strings.Split(sp.KafkaConfig().Hosts(), ","), producerConfig)
+		if err != nil {
+			panic(err)
+		}
+		sp.syncProducer = syncProducer
+	}
+	return sp.syncProducer
+
+}
+
+// UserProducer returns user producer
+func (sp *serviceProvider) UserProducer(_ context.Context) kafka.Producer {
+	if sp.kafkaProducer == nil {
+		sp.kafkaProducer = producer.NewProducer(sp.SyncProducer(), sp.KafkaConfig().UserTopic())
+		closer.Add(sp.kafkaProducer.Close)
+	}
+	return sp.kafkaProducer
+}
+
 // UserRepository returns user repository
 func (sp *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if sp.userRepository == nil {
@@ -148,7 +221,11 @@ func (sp *serviceProvider) UserCache(_ context.Context) repository.UserCache {
 func (sp *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if sp.userService == nil {
 		sp.userService = userService.NewService(
-			sp.UserRepository(ctx), sp.LogRepository(ctx), sp.TxManager(ctx), sp.UserCache(ctx),
+			sp.UserRepository(ctx),
+			sp.LogRepository(ctx),
+			sp.TxManager(ctx),
+			sp.UserCache(ctx),
+			sp.UserProducer(ctx),
 		)
 	}
 	return sp.userService
