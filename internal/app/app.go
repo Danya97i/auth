@@ -15,12 +15,15 @@ import (
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
 	"github.com/Danya97i/auth/internal/config"
 	"github.com/Danya97i/auth/internal/interceptor"
-	pb "github.com/Danya97i/auth/pkg/user_v1"
+	pbAccess "github.com/Danya97i/auth/pkg/access_v1"
+	pbAuth "github.com/Danya97i/auth/pkg/auth_v1"
+	pbUser "github.com/Danya97i/auth/pkg/user_v1"
 
 	// register statik
 	_ "github.com/Danya97i/auth/statik"
@@ -125,12 +128,19 @@ func (a *App) initServiceProvider(_ context.Context) error {
 
 // initGrpcServer - инициализирует gRPC сервер
 func (a *App) initGrpcServer(ctx context.Context) error {
+	creds, err := credentials.NewServerTLSFromFile("service.pem", "service.key")
+	if err != nil {
+		return err
+	}
+
 	a.grpcServer = grpc.NewServer(
-		grpc.Creds(insecure.NewCredentials()),
+		grpc.Creds(creds),
 		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
 	)
 	reflection.Register(a.grpcServer)
-	pb.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserServer(ctx))
+	pbUser.RegisterUserV1Server(a.grpcServer, a.serviceProvider.UserServer(ctx))
+	pbAuth.RegisterAuthV1Server(a.grpcServer, a.serviceProvider.AuthServer(ctx))
+	pbAccess.RegisterAccessV1Server(a.grpcServer, a.serviceProvider.AccessServer(ctx))
 	return nil
 }
 
@@ -139,7 +149,7 @@ func (a *App) initGatewayServer(ctx context.Context) error {
 
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-	err := pb.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
+	err := pbUser.RegisterUserV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GRPCConfig().Address(), opts)
 	if err != nil {
 		return err
 	}

@@ -11,6 +11,8 @@ import (
 	"github.com/IBM/sarama"
 	redigo "github.com/gomodule/redigo/redis"
 
+	accessServer "github.com/Danya97i/auth/internal/api/access"
+	authServer "github.com/Danya97i/auth/internal/api/auth"
 	userServer "github.com/Danya97i/auth/internal/api/user"
 	"github.com/Danya97i/auth/internal/client/cache"
 	"github.com/Danya97i/auth/internal/client/cache/redis"
@@ -19,20 +21,25 @@ import (
 	"github.com/Danya97i/auth/internal/config"
 	"github.com/Danya97i/auth/internal/config/env"
 	"github.com/Danya97i/auth/internal/repository"
+	accessRuleRepo "github.com/Danya97i/auth/internal/repository/access_rule"
 	logRepo "github.com/Danya97i/auth/internal/repository/logs"
 	pgUserRepo "github.com/Danya97i/auth/internal/repository/user/pg"
 	redisUserRepo "github.com/Danya97i/auth/internal/repository/user/redis"
 	"github.com/Danya97i/auth/internal/service"
+	accessService "github.com/Danya97i/auth/internal/service/access"
+	authService "github.com/Danya97i/auth/internal/service/auth"
 	userService "github.com/Danya97i/auth/internal/service/user"
 )
 
 type serviceProvider struct {
-	pgConfig      config.PGConfig
-	grpcConfig    config.GRPCConfig
-	redisConfig   config.RedisConfig
-	gatewayConfig config.GatewayConfig
-	swaggerConfig config.SwaggerConfig
-	kafkaConfig   config.KafkaConfig
+	pgConfig           config.PGConfig
+	grpcConfig         config.GRPCConfig
+	redisConfig        config.RedisConfig
+	gatewayConfig      config.GatewayConfig
+	swaggerConfig      config.SwaggerConfig
+	kafkaConfig        config.KafkaConfig
+	accessTokenConfig  config.TokenConfig
+	refreshTokenConfig config.TokenConfig
 
 	dbClient  db.Client
 	txManager db.TxManager
@@ -48,11 +55,21 @@ type serviceProvider struct {
 
 	userRepository repository.UserRepository
 
+	logRepository repository.LogRepository
+
+	accessRuleRepository repository.AccessRuleRepository
+
 	userService service.UserService
 
 	userServer *userServer.Server
 
-	logRepository repository.LogRepository
+	authServer *authServer.Server
+
+	accessServer *accessServer.Server
+
+	authService service.AuthService
+
+	accessService service.AccessService
 }
 
 func newServiceProvider() *serviceProvider {
@@ -119,6 +136,7 @@ func (sp *serviceProvider) SwaggerConfig() config.SwaggerConfig {
 	return sp.swaggerConfig
 }
 
+// KafkaConfig returns kafka config
 func (sp *serviceProvider) KafkaConfig() config.KafkaConfig {
 	if sp.kafkaConfig == nil {
 		config, err := env.NewKafkaConfig()
@@ -128,6 +146,31 @@ func (sp *serviceProvider) KafkaConfig() config.KafkaConfig {
 		sp.kafkaConfig = config
 	}
 	return sp.kafkaConfig
+}
+
+// AccessTokenConfig returns access token config
+func (sp *serviceProvider) AccessTokenConfig() config.TokenConfig {
+	if sp.accessTokenConfig == nil {
+		config, err := env.NewAccessTokenConfig()
+		if err != nil {
+			panic(err)
+		}
+		sp.accessTokenConfig = config
+	}
+	return sp.accessTokenConfig
+
+}
+
+// RefreshTokenConfig returns refresh token config
+func (sp *serviceProvider) RefreshTokenConfig() config.TokenConfig {
+	if sp.refreshTokenConfig == nil {
+		config, err := env.NewRefreshTokenConfig()
+		if err != nil {
+			panic(err)
+		}
+		sp.refreshTokenConfig = config
+	}
+	return sp.refreshTokenConfig
 }
 
 // DBClient returns db client
@@ -154,6 +197,7 @@ func (sp *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	return sp.txManager
 }
 
+// RedisPool returns redis pool
 func (sp *serviceProvider) RedisPool() *redigo.Pool {
 	if sp.redisPool == nil {
 		sp.redisPool = &redigo.Pool{
@@ -168,6 +212,7 @@ func (sp *serviceProvider) RedisPool() *redigo.Pool {
 	return sp.redisPool
 }
 
+// RedisClient returns redis client
 func (sp *serviceProvider) RedisClient() cache.RedisClient {
 	if sp.redisClient == nil {
 		sp.redisClient = redis.NewClient(sp.RedisPool(), sp.RedisConfig())
@@ -176,6 +221,7 @@ func (sp *serviceProvider) RedisClient() cache.RedisClient {
 	return sp.redisClient
 }
 
+// SyncProducer returns sync producer
 func (sp *serviceProvider) SyncProducer() sarama.SyncProducer {
 	if sp.syncProducer == nil {
 		producerConfig := sarama.NewConfig()
@@ -210,6 +256,7 @@ func (sp *serviceProvider) UserRepository(ctx context.Context) repository.UserRe
 	return sp.userRepository
 }
 
+// UserCache returns user cache
 func (sp *serviceProvider) UserCache(_ context.Context) repository.UserCache {
 	if sp.userCache == nil {
 		sp.userCache = redisUserRepo.NewRepositoty(sp.RedisClient())
@@ -245,4 +292,55 @@ func (sp *serviceProvider) LogRepository(ctx context.Context) repository.LogRepo
 		sp.logRepository = logRepo.NewRepository(sp.DBClient(ctx))
 	}
 	return sp.logRepository
+}
+
+// AccessRuleRepository returns access rule repository
+func (sp *serviceProvider) AccessRuleRepository(ctx context.Context) repository.AccessRuleRepository {
+	if sp.accessRuleRepository == nil {
+		sp.accessRuleRepository = accessRuleRepo.NewRepository(sp.DBClient(ctx))
+	}
+	return sp.accessRuleRepository
+}
+
+//
+
+// AuthServer returns auth server
+func (sp *serviceProvider) AuthServer(ctx context.Context) *authServer.Server {
+	if sp.authServer == nil {
+		sp.authServer = authServer.NewServer(sp.AuthService(ctx))
+	}
+	return sp.authServer
+}
+
+// AccessServer returns access server
+func (sp *serviceProvider) AccessServer(ctx context.Context) *accessServer.Server {
+	if sp.accessServer == nil {
+		sp.accessServer = accessServer.NewServer(sp.AccessService(ctx))
+	}
+	return sp.accessServer
+}
+
+// AuthService returns auth service
+func (sp *serviceProvider) AuthService(ctx context.Context) service.AuthService {
+	if sp.authService == nil {
+		sp.authService = authService.NewService(
+			sp.UserRepository(ctx),
+			sp.AccessTokenConfig().Secret(),
+			sp.RefreshTokenConfig().Secret(),
+			sp.AccessTokenConfig().Expiration(),
+			sp.RefreshTokenConfig().Expiration(),
+		)
+	}
+	return sp.authService
+}
+
+// AccessService returns access service
+func (sp *serviceProvider) AccessService(ctx context.Context) service.AccessService {
+	if sp.accessService == nil {
+		sp.accessService = accessService.NewService(
+			sp.AccessRuleRepository(ctx),
+			sp.AccessTokenConfig().Secret(),
+		)
+	}
+	return sp.accessService
 }

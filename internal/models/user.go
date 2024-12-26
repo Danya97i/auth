@@ -10,6 +10,7 @@ import (
 type User struct {
 	ID        int64
 	Info      *UserInfo
+	PassHash  string
 	CreatedAt time.Time
 	UpdatedAt *time.Time
 }

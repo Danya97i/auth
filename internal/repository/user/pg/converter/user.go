@@ -19,6 +19,7 @@ func ToUserFromRepo(repoUser *repoModels.User) *models.User {
 	user := &models.User{
 		ID:        repoUser.ID,
 		Info:      info,
+		PassHash:  repoUser.Password,
 		CreatedAt: repoUser.CreatedAt.Time,
 	}
 
